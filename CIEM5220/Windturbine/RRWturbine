@@ -1,0 +1,132 @@
+# ================================================
+#         CIEM5220 - Random Vibrations
+# Offshore Wind Turbine in Irregular Waves
+#               
+# ================================================
+
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+import numpy as np
+import sympy as sp
+import matplotlib.pyplot as plt
+
+from dynamics_tools import shape_functions, element_stiffness, \
+    element_mass, H_sdof, H_2dof, prob_exceedance, S_jonswap
+
+from scipy.optimize import brentq
+
+x=sp.Symbol('x')
+
+#__ Structural parameters ___________________________________
+
+D0 = 5                          # [m]  
+t=0.08                          # [m]  
+Di = D0-2*t                     # [m]
+A = np.pi/4*(D0**2-Di**2)       # [m^2]
+rho = 7850                      # steel [kg/m^3] ##
+E = 210e9                       # [Pa]
+I = np.pi/64*(D0**4-Di**4)      # [m^-4]
+EI=E*I                          # [Nm^2]
+rhoA=rho*A                      # [kg/m]
+
+Hw=30.0                         # [m]
+Ha=90.0                         # [m]
+L=Hw+Ha                         # [m]  
+
+M_nacelle=3e5
+
+#__ Hydrodynamic parameters __________________________
+
+rho_w=1025.0         # seawater density [kg/m^3]
+Ca=1                 # Cylinder
+Cm=1+Ca              # intertia coefficient 
+mu0=rho_w*np.pi*D0**2/4 # [kg/m] water mass per unit length
+mu_add=Ca*mu0           # added mass per unit length [kg/m]
+
+# element division, can be edited
+
+elem_w=3        # elements in submerged zone
+elem_a=9        # elements in air zone   
+elements=elem_w+elem_a
+
+nodes=elements+1
+DOF=2             # Euler-Bernoulli
+ndof=nodes*DOF
+le_w=Hw/elem_w    #element length in water
+le_a=Ha/elem_a    #element lenght in air
+
+#__ Wave spectrum parameters (JONSWAP) _____________________________
+
+alpha=0.0081            # Energy scale
+g=9.81                  # Gravity [m/s^2]
+Tp=12                   # Peak wave period [s] (10-14 s offshore)
+gamma=3.3               # JONSWAP
+omega_p=2*np.pi/Tp
+
+# frequency array
+omega=np.linspace(0.2, 4*omega_p, 1000) # [rad/s]
+
+# JONSWAP spectrum
+
+S=S_jonswap(alpha, omega, omega_p, gamma)
+
+fig,ax=plt.subplots()
+ax.plot(omega, S)
+ax.set_xlabel("Frequency w [rad/s]")
+ax.set_ylabel("S(w) [m^2*s/rad]")
+ax.set_title(f"JONSWAP spectrum Tp={Tp}s, gamma={gamma}")
+ax.axvline(omega_p, color='red', linestyle='--', label=f"wp={omega_p:.2f} rad/s")
+ax.legend()
+ax.grid(True)
+plt.show()
+
+
+B_w = shape_functions(le_w)
+B_a = shape_functions(le_a)
+Ke_w = element_stiffness(le_w, EI)
+Ke_a = element_stiffness(le_a, EI)
+Me_w = element_mass(le_w, rhoA)
+Me_a = element_mass(le_a, rhoA)
+
+#__ Dispersion (& root finding)_____________
+
+h=Hw 
+
+def dispersion(k, omega, h):
+    """ 
+    Returns zero when k satisfies
+    the dispersion relation
+    """
+    return omega**2-g*k*np.tanh(k*h)
+
+# solve for each frequency
+k_arr=np.zeros(len(omega))
+for i, omega_i in enumerate(omega):
+    k_arr[i]= brentq(dispersion, 1e-6, 1000, args=(omega_i, h))
+
+print(f"Wave numbers range: {k_arr[0]:.4f} to {k_arr[-1]:.4f} rad/m")
+print(f"Wavelengths range: {2*np.pi/k_arr[-1]:.1f} to {2*np.pi/k_arr[0]:.1f} m")
+
+i_peak=np.argmin(np.abs(omega-omega_p))
+print(f"At peak: k= {k_arr[i_peak]:.4f} rad/m")
+print(f"Wavelength at peak: {2*np.pi/k_arr[i_peak]:.1f}m")
+print(f"Deep water check: {g*Tp**2/(2*np.pi):.1f}m")
+
+dw=omega[1]-omega[0]
+A_n=np.sqrt(2*S*dw)
+
+# depth coordinate for the submerged pile
+z_sub=np.linspace(-h,0,50) # 50 point from seabed to surface
+
+# depth decay matrix: shape (len(z_sub), len(omega))
+D_n=np.zeros((len(z_sub), len(omega)))
+for i, zi in enumerate(z_sub):
+    D_n[i, :]=np.cosh(k_arr*(zi+h))/np.sinh(k_arr*h)
+print(f"Wave amplitudes: max={np.max(A_n):.3f} m, at peak= {A_n[i_peak]:.3f} m")
+print(f"Depth decay at surface (z=0): min={D_n[-1,:].min():.3f} max={D_n[-1,:].max():.3f}")
+print(f"Depth decay at seabed (z=-h): min={D_n[0,:].min():.4f} max={D_n[0,:].max():.3f}")
+
+print(f"Min sinh(k*h)={np.min(np.sinh(k_arr*h)):.6f}")
+print(f"At lowest omega: k={k_arr[0]:.5f}, kh={k_arr[0]*h:.5f}")
