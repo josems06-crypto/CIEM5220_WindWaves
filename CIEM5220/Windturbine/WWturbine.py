@@ -10,7 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import numpy as np
 import sympy as sp
 import matplotlib.pyplot as plt
-from dynamics_tools import shape_functions, element_stiffness, element_mass, compute_f1
+from CIEM5220.Windturbine.dynamics_tools import shape_functions, element_stiffness, element_mass, compute_f1
 from scipy.linalg import eigh
 from scipy.optimize import brentq
 

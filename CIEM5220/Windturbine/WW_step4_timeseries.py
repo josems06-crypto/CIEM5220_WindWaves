@@ -130,7 +130,7 @@ phi_wave_LC1=np.random.uniform(0,2*np.pi, len(omega_axis))
 phi_wave_LC2=np.random.uniform(0,2*np.pi, len(omega_axis))
 
 # solve dispersion relation for wave numbers
-from dynamics_tools import wave_numbers
+from CIEM5220.Windturbine.dynamics_tools import wave_numbers
 k_arr_LC1= wave_numbers(omega_axis, h)
 k_arr_LC2= wave_numbers(omega_axis, h)
 

@@ -125,7 +125,7 @@ Cm=2 # inertia coefficient
 Cd_wave=1 # drag coefficient
 
 # Wave number at each frequency
-from dynamics_tools import wave_numbers
+from CIEM5220.Windturbine.dynamics_tools import wave_numbers
 
 h= Hw
 k_arr = wave_numbers(omega_axis, h)

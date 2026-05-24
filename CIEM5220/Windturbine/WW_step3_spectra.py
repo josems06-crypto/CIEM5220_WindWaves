@@ -10,7 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import numpy as np
 import matplotlib.pyplot as plt
-from dynamics_tools import S_jonswap, wave_numbers
+from CIEM5220.Windturbine.dynamics_tools import S_jonswap, wave_numbers
 from scipy.optimize import brentq
 
 #==== LOAD FEM RESULTS =====
