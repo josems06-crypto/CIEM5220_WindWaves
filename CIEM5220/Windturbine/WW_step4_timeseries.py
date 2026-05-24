@@ -37,12 +37,12 @@ spec=np.load(os.path.join(os.path.dirname(__file__), 'outputs', 'spectra_results
 
 f_axis= spec['f_axis']
 omega_axis=spec['omega_axis']
-U10_LC1=float(spec['U10_LC1'])
-U10_LC2=float(spec['U10_LC2'])
-Tp_LC1=float(spec['Tp_LC1'])
-Tp_LC2=float(spec['Tp_LC2'])
-Hs_LC1=float(spec['Hs_LC1'])
-Hs_LC2=float(spec['Hs_LC2'])
+U10_LC1=float(spec['U10_LC1'].flat[0])
+U10_LC2=float(spec['U10_LC2'].flat[0])
+Tp_LC1=float(spec['Tp_LC1'].flat[0])
+Tp_LC2=float(spec['Tp_LC2'].flat[0])
+Hs_LC1=float(spec['Hs_LC1'].flat[0])
+Hs_LC2=float(spec['Hs_LC2'].flat[0])
 U_mean_LC1=spec['U_mean_LC1']
 U_mean_LC2=spec['U_mean_LC2']
 z_nodes=spec['z_nodes']
@@ -54,8 +54,8 @@ S_co_LC1=spec['S_co_LC1']
 S_co_LC2=spec['S_co_LC2']
 S_jonswap_LC1=spec['S_jonswap_LC1']
 S_jonswap_LC2=spec['S_jonswap_LC2']
-omega_p_LC1=float(spec['omega_p_LC1'])
-omega_p_LC2=float(spec['omega_p_LC2'])
+omega_p_LC1=float(spec['omega_p_LC1'].flat[0])
+omega_p_LC2=float(spec['omega_p_LC2'].flat[0])
 
 # ======== TIME =========
 dt=0.05 # time step [s]
