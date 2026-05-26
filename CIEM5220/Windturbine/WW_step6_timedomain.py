@@ -119,7 +119,7 @@ def compute_forces(u_full, v_full, u_water, du_water,
 
         def q_morison(u_w, du_w, v_s):
             u_rel=u_w-v_s
-            return (rho_w*Cm*np.po*D0**2/4*du_w
+            return (rho_w*Cm*np.pi*D0**2/4*du_w
                     +0.5*rho_w*Cd_wave*D0*u_rel*abs(u_rel))
         q_bot=q_morison(u_w_bot, du_w_bot, v_bot)
         q_top=q_morison(u_w_top, du_w_top, v_top)
